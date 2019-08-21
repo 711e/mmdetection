@@ -153,7 +153,7 @@ class AnchorHead(nn.Module):
                 cls_score,
                 labels,
                 label_weights,
-                # mix_inds=mix_inds,
+                mix_inds=mix_inds,
                 gamma=cfg.gamma,
                 alpha=cfg.alpha,
                 avg_factor=num_total_samples)

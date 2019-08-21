@@ -33,6 +33,7 @@ def weighted_binary_cross_entropy(pred, label, weight, mix_inds=None, avg_factor
 def sigmoid_focal_loss(pred,
                        target,
                        weight,
+                       mix_inds=None,
                        gamma=2.0,
                        alpha=0.25,
                        reduction='mean'):
@@ -44,6 +45,13 @@ def sigmoid_focal_loss(pred,
     loss = F.binary_cross_entropy_with_logits(
         pred, target, reduction='none') * weight
     reduction_enum = F._Reduction.get_enum(reduction)
+    if mix_inds is not None:
+        s = loss.shape
+        if len(s) == 1:
+            mix_inds = torch.reshape(mix_inds, shape=loss.shape)
+        else:
+            mix_inds = torch.reshape(mix_inds, shape=[s[0], -1])
+        loss = loss * mix_inds
     # none: 0, mean:1, sum: 2
     if reduction_enum == 0:
         return loss
@@ -56,6 +64,7 @@ def sigmoid_focal_loss(pred,
 def weighted_sigmoid_focal_loss(pred,
                                 target,
                                 weight,
+                                mix_inds=None,
                                 gamma=2.0,
                                 alpha=0.25,
                                 avg_factor=None,
@@ -63,7 +72,7 @@ def weighted_sigmoid_focal_loss(pred,
     if avg_factor is None:
         avg_factor = torch.sum(weight > 0).float().item() / num_classes + 1e-6
     return sigmoid_focal_loss(
-        pred, target, weight, gamma=gamma, alpha=alpha,
+        pred, target, weight, mix_inds=mix_inds, gamma=gamma, alpha=alpha,
         reduction='sum')[None] / avg_factor
 
 
