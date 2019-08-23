@@ -17,7 +17,7 @@ class PhotoMetricDistortion(object):
         self.saturation_lower, self.saturation_upper = saturation_range
         self.hue_delta = hue_delta
 
-    def __call__(self, img, boxes, labels, mix_weights):
+    def __call__(self, img, boxes, labels, mix_weights, margin):
         # random brightness
         if random.randint(2):
             delta = random.uniform(-self.brightness_delta,
@@ -73,7 +73,11 @@ class Expand(object):
             self.mean = mean
         self.min_ratio, self.max_ratio = ratio_range
 
-    def __call__(self, img, boxes, labels, mix_weights):
+    def __call__(self, img, boxes, labels, mix_weights, margin):
+        height = img.shape[0]
+        width = img.shape[0]
+        if height > margin[0] and width > margin[1]:
+            img[margin[0]:height, margin[1]:width, :] = self.mean
         if random.randint(2):
             return img, boxes, labels, mix_weights
 
@@ -98,7 +102,7 @@ class RandomCrop(object):
         self.sample_mode = (1, *min_ious, 0)
         self.min_crop_size = min_crop_size
 
-    def __call__(self, img, boxes, labels, mix_weights):
+    def __call__(self, img, boxes, labels, mix_weights, margin):
         h, w, c = img.shape
         while True:
             mode = random.choice(self.sample_mode)
@@ -159,8 +163,8 @@ class ExtraAugmentation(object):
         if random_crop is not None:
             self.transforms.append(RandomCrop(**random_crop))
 
-    def __call__(self, img, boxes, labels, mix_weights):
+    def __call__(self, img, boxes, labels, mix_weights, margin):
         img = img.astype(np.float32)
         for transform in self.transforms:
-            img, boxes, labels, mix_weights = transform(img, boxes, labels, mix_weights)
+            img, boxes, labels, mix_weights = transform(img, boxes, labels, mix_weights, margin)
         return img, boxes, labels, mix_weights

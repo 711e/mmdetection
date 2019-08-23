@@ -18,9 +18,12 @@ class MixUp(object):
             label1 = np.hstack((labels1, weights1))
             return img1, label1
 
+        min_h = min(img1.shape[0], img2.shape[0])
+        min_w = min(img1.shape[1], img2.shape[1])
+
         height = max(img1.shape[0], img2.shape[0])
         width = max(img1.shape[1], img2.shape[1])
-        mix_img = np.zeros(shape=(height, width, 3), dtype='float32')
+        mix_img = np.zeros((height, width, img1.shape[-1]), dtype='float32')
 
         mix_img[:img1.shape[0], :img1.shape[1], :] = img1.astype('float32') * lambd
         mix_img[:img2.shape[0], :img2.shape[1], :] += img2.astype('float32') * (1. - lambd)
@@ -37,4 +40,5 @@ class MixUp(object):
         mix_weights = np.array(mix_labels[:, 1], dtype=np.float32)
         mix_labels = np.array(mix_labels[:, 0], dtype=np.int)
 
-        return mix_img, mix_box, mix_labels, mix_weights
+        margin = [min_h, min_w]
+        return mix_img, mix_box, mix_labels, mix_weights, margin

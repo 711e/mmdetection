@@ -202,16 +202,15 @@ class CustomDataset(Dataset):
 
         if self.mixup is not None:
             idx2 = np.random.choice(np.delete(np.arange(index_len), idx))
-            # print(idx2)
             img_info2 = self.img_infos[idx2]
             img2 = mmcv.imread(osp.join(self.img_prefix, img_info2['filename']))
             ann2 = self.get_ann_info(idx2)
             box2 = ann2['bboxes']
             labels2 = ann2['labels']
-            img, gt_bboxes, gt_labels, mix_weights = self.mixup(img, img2, gt_bboxes, box2, gt_labels, labels2)
+            img, gt_bboxes, gt_labels, mix_weights, margin = self.mixup(img, img2, gt_bboxes, box2, gt_labels, labels2)
             # extra augmentation
             if self.extra_aug is not None:
-                img, gt_bboxes, gt_labels, mix_weights = self.extra_aug(img, gt_bboxes, gt_labels, mix_weights)
+                img, gt_bboxes, gt_labels, mix_weights = self.extra_aug(img, gt_bboxes, gt_labels, mix_weights, margin)
 
         elif self.mixup is None:
             mix_weights = None
